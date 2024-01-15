@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 from os import getenv
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine
 from models.base_model import Base
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 
 class DBStorage:
@@ -25,7 +26,19 @@ class DBStorage:
 
     def all(self, cls=None):
         """Query on the current database session"""
-        from models import classes
+        from models.base_model import BaseModel
+        from models.user import User
+        from models.place import Place
+        from models.state import State
+        from models.city import City
+        from models.amenity import Amenity
+        from models.review import Review
+
+        classes = {
+            'BaseModel': BaseModel, 'User': User, 'Place': Place,
+            'State': State, 'City': City, 'Amenity': Amenity,
+            'Review': Review
+        }
         results = {}
 
         if cls:
@@ -40,3 +53,23 @@ class DBStorage:
             results[key] = obj
 
         return results
+
+    def new(self, obj):
+        """Add a new object to the current database session"""
+        self.__session.add(obj)
+
+    def save(self):
+        """Save all changes of the current database session"""
+        self.__session.commit()
+
+    def delete(self, obj=None):
+        """Delete an object from the current database session"""
+        if not obj:
+            self.__session.delete(obj)
+
+    def reload(self):
+        """Reload all objects of the current database session"""
+        Base.metadata.create_all(self.__engine)
+        Session = scoped_session(sessionmaker(
+            bind=self.__engine, expire_on_commit=False))
+        self.__session = Session()
