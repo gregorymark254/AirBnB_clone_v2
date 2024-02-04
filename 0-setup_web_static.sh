@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# setting up your web servers for the deployment
 sudo apt-get update
 sudo apt-get install -y nginx
 
